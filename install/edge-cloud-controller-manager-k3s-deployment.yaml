@@ -1,0 +1,65 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloud-controller-manager
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:cloud-controller-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: cloud-controller-manager
+  namespace: kube-system
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: edge-cloud-controller-manager
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: edge-cloud-controller-manager
+  template:
+    metadata:
+      labels:
+        app: edge-cloud-controller-manager
+    spec:
+      serviceAccountName: cloud-controller-manager
+      hostNetwork: true
+      containers:
+      - name: edge-cloud-controller-manager
+        image: midokura/edge-cloud-controller-manager
+        command: ["/edge-cloud-controller-manager"]
+        args:
+        - --cloud-provider=edge
+        - --cloud-config=/dev/null
+        - --leader-elect=false
+        - --use-service-account-credentials
+        - --client-ca-file=/var/lib/rancher/k3s/server/tls/client-ca.crt
+        - --requestheader-client-ca-file=/var/lib/rancher/k3s/server/tls/request-header-ca.crt
+        - --allow-untagged-cloud
+        - --feature-gates=LegacyNodeRoleBehavior=false
+        - --v=1
+        - --vmodule=edge=5
+        - --vmodule=edge_config=5
+        - --vmodule=edge_loadbalancer=5
+        securityContext:
+          privileged: true
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: certs
+          mountPath: /var/lib/rancher/k3s/server/tls
+      volumes:
+      - name: certs
+        hostPath:
+          path: /var/lib/rancher/k3s/server/tls
+
