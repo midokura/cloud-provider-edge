@@ -1,0 +1,96 @@
+# Cluster roles definitions for cloud-controller-manager
+#
+# This file defines ClusterRole objects to match the requirements of each
+# of the different controllers in cloud controller manager:
+#
+#    cloud-controller-manager:node-controller
+#    cloud-controller-manager:persistent-volume-labels-controller
+#    cloud-controller-manager:route-controller
+#    cloud-controller-manager:service-controller
+#
+# Also, for the common core functionality:
+#
+#    cloud-controller-manager:core
+#
+# This way is easier to assign to a cloud provider the minimum needed rights
+# depending on the actual interfaces implemented.
+#
+# Reference:
+#
+#   https://v1-12.docs.kubernetes.io/docs/concepts/architecture/cloud-controller/#authorization
+#
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:cloud-controller-manager:node-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:cloud-controller-manager:persistent-volume-labels-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  verbs:
+  - get
+  - list
+  - update
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:cloud-controller-manager:route-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:cloud-controller-manager:service-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:cloud-controller-manager:core
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
