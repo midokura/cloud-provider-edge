@@ -65,14 +65,20 @@ clean:
 clean-dependencies:
 	git checkout -- go.mod go.sum
 
-push-amd64-linux: edge-cloud-controller-manager-amd64-linux
+build-amd64-linux: edge-cloud-controller-manager-amd64-linux
 	cp edge-cloud-controller-manager-amd64-linux edge-cloud-controller-manager
 	docker build -t midokura/edge-cloud-controller-manager:amd64-linux-latest .
-	docker push midokura/edge-cloud-controller-manager:amd64-linux-latest
+	rm edge-cloud-controller-manager
 
-push-arm64-linux: edge-cloud-controller-manager-arm64-linux
+build-arm64-linux: edge-cloud-controller-manager-arm64-linux
 	cp edge-cloud-controller-manager-arm64-linux edge-cloud-controller-manager
 	docker build -t midokura/edge-cloud-controller-manager:arm64-linux-latest .
+	rm edge-cloud-controller-manager
+
+push-amd64-linux: build-amd64-linux
+	docker push midokura/edge-cloud-controller-manager:amd64-linux-latest
+
+push-arm64-linux: build-arm64-linux
 	docker push midokura/edge-cloud-controller-manager:arm64-linux-latest
 
 push: push-amd64-linux push-arm64-linux
@@ -94,3 +100,15 @@ run: edge-cloud-controller-manager-$(GOARCH)-$(GOOS)
 
 # Note: --feature-gates='LegacyNodeRoleBehavior=false' is needed due to master not included in nodes able to provide load balancing.
 #       See https://github.com/kubernetes/kubernetes/blob/37c3a4da97a866a863eb71543a79a56e9834da14/pkg/controller/service/service_controller.go#L642
+
+deploy-k3s: build-$(GOARCH)-$(GOOS)
+	# k3s has limitatoins regarding pulling images from private repositories (see https://github.com/rancher/k3s/issues/502)
+	# On the other hand, it allows to preload the images copying their TGZ file into /var/lib/rancher/k3s/agent/images/ (and restarting the service)
+	# See https://stackoverflow.com/a/55457377 and https://github.com/rancher/k3s/issues/167
+	sudo docker save midokura/edge-cloud-controller-manager:latest -o /var/lib/rancher/k3s/agent/images/edge-cloud-controller-manager-latest.tgz
+	sudo docker save midokura/edge-cloud-controller-manager:$(GOARCH)-$(GOOS)-latest -o /var/lib/rancher/k3s/agent/images/edge-cloud-controller-manager-$(GOARCH)-$(GOOS)-latest.tgz
+	sudo service k3s restart
+	sudo k3s kubectl apply -f install/cloud-controller-manager-cluster-roles.yaml
+	sudo k3s kubectl delete -f install/edge-cloud-controller-manager-k3s-deployment.yaml --wait=true || echo keep going
+	sleep 5
+	sudo k3s kubectl apply -f install/edge-cloud-controller-manager-k3s-deployment.yaml
