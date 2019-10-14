@@ -59,11 +59,11 @@ func NewEdge(cfg Config) (*Edge, error) {
 // Initialize provides the cloud with a kubernetes client builder and may spawn goroutines
 // to perform housekeeping or run custom controllers specific to the cloud provider.
 // Any tasks started here should be cleaned up when the stop channel closes.
-func (cloud Edge) Initialize(clientBuilder cloudprovider.ControllerClientBuilder, stop <-chan struct{}) {
+func (cloud *Edge) Initialize(clientBuilder cloudprovider.ControllerClientBuilder, stop <-chan struct{}) {
 }
 
 // LoadBalancer returns a balancer interface, and true since the interface is supported.
-func (cloud Edge) LoadBalancer() (cloudprovider.LoadBalancer, bool) {
+func (cloud *Edge) LoadBalancer() (cloudprovider.LoadBalancer, bool) {
 	if cloud.LoadBalancerInstance == nil {
 		loadBalancer, err := NewLoadBalancer()
 		if err != nil {
@@ -77,31 +77,31 @@ func (cloud Edge) LoadBalancer() (cloudprovider.LoadBalancer, bool) {
 }
 
 // Instances returns nil and false, since instances interface is not supported.
-func (cloud Edge) Instances() (cloudprovider.Instances, bool) {
+func (cloud *Edge) Instances() (cloudprovider.Instances, bool) {
 	return nil, false
 }
 
 // Zones returns nil and false, since zones interface is not supported.
-func (cloud Edge) Zones() (cloudprovider.Zones, bool) {
+func (cloud *Edge) Zones() (cloudprovider.Zones, bool) {
 	return nil, false
 }
 
 // Clusters returns nil and false, since clusters interface is not supported.
-func (cloud Edge) Clusters() (cloudprovider.Clusters, bool) {
+func (cloud *Edge) Clusters() (cloudprovider.Clusters, bool) {
 	return nil, false
 }
 
 // Routes returns nil and false, since routes interface is not supported.
-func (cloud Edge) Routes() (cloudprovider.Routes, bool) {
+func (cloud *Edge) Routes() (cloudprovider.Routes, bool) {
 	return nil, false
 }
 
 // ProviderName returns the cloud provider ID.
-func (cloud Edge) ProviderName() string {
+func (cloud *Edge) ProviderName() string {
 	return ProviderName
 }
 
 // HasClusterID returns true, as a ClusterID is required and set
-func (cloud Edge) HasClusterID() bool {
+func (cloud *Edge) HasClusterID() bool {
 	return true
 }
