@@ -384,7 +384,7 @@ func getFirstNodeInternalIP(nodes []*k8s.Node) (string, error) {
 
 func getLocalAddressToHost(host string) net.IP {
 	// To obtain the local address to a host, we create a socket (dial)
-	// just to read the local address, that should have been choosen according to
+	// just to read the local address, that should have been chosen according to
 	// local routing rules.
 	// Both TCP and UDP should give the same IP address.
 	// We use UDP since it is not connection oriented, so it in fact does not
