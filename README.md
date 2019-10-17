@@ -41,5 +41,5 @@ With no particular order:
 
 Some code structure and documentation were adapted from other cloud providers, like:
 
- * [Openstack](https://github.com/kubernetes/cloud-provider-openstack)
+ * [OpenStack](https://github.com/kubernetes/cloud-provider-openstack)
  * [AWS](https://github.com/kubernetes/cloud-provider-aws)
