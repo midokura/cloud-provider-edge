@@ -31,6 +31,6 @@ It should be easily adapted to other Kubernetes clusters.
 
 ## Examples
 
-Here are some examples of how you could leverage `openstack-cloud-controller-manager`:
+Here are some examples of how you could leverage `edge-cloud-controller-manager`:
 
 - [loadbalancers](../examples/loadbalancers/)
