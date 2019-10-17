@@ -87,7 +87,7 @@ type LoadBalancer struct {
 	loadBalancers map[string]loadBalancer
 }
 
-// Initialize setup internal fields of LoadBalancer
+// NewLoadBalancer setup internal fields of LoadBalancer
 func NewLoadBalancer() (*LoadBalancer, error) {
 	lb := &LoadBalancer{}
 	// get UPnP client
