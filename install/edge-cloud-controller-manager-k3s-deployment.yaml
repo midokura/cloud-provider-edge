@@ -2,29 +2,41 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: cloud-controller-manager
+  name: edge-cloud-controller-manager
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: system:cloud-controller-manager
+  name: system:edge-cloud-controller-manager:core
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cluster-admin
+  name: system:cloud-controller-manager:core
 subjects:
 - kind: ServiceAccount
-  name: cloud-controller-manager
+  name: edge-cloud-controller-manager
   namespace: kube-system
 ---
-apiVersion: apps/v1beta1
-kind: Deployment
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:edge-cloud-controller-manager:service-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:cloud-controller-manager:service-controller
+subjects:
+- kind: ServiceAccount
+  name: edge-cloud-controller-manager
+  namespace: kube-system
+---
+apiVersion: apps/v1
+kind: DaemonSet
 metadata:
   name: edge-cloud-controller-manager
   namespace: kube-system
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: edge-cloud-controller-manager
@@ -33,33 +45,21 @@ spec:
       labels:
         app: edge-cloud-controller-manager
     spec:
-      serviceAccountName: cloud-controller-manager
-      hostNetwork: true
+      serviceAccountName: edge-cloud-controller-manager
       containers:
       - name: edge-cloud-controller-manager
-        image: midokura/edge-cloud-controller-manager
-        command: ["/edge-cloud-controller-manager"]
-        args:
-        - --cloud-provider=edge
-        - --cloud-config=/dev/null
-        - --leader-elect=false
-        - --use-service-account-credentials
-        - --client-ca-file=/var/lib/rancher/k3s/server/tls/client-ca.crt
-        - --requestheader-client-ca-file=/var/lib/rancher/k3s/server/tls/request-header-ca.crt
-        - --allow-untagged-cloud
-        - --feature-gates=LegacyNodeRoleBehavior=false
-        - --v=1
-        - --vmodule=edge=5
-        - --vmodule=edge_config=5
-        - --vmodule=edge_loadbalancer=5
-        securityContext:
-          privileged: true
-        imagePullPolicy: Always
-        volumeMounts:
-        - name: certs
-          mountPath: /var/lib/rancher/k3s/server/tls
-      volumes:
-      - name: certs
-        hostPath:
-          path: /var/lib/rancher/k3s/server/tls
-
+        image: midokura/edge-cloud-controller-manager:amd64-linux-latest
+      hostNetwork: true
+      tolerations:
+      # this is required so CCM can bootstrap itself
+      - key: node.cloudprovider.kubernetes.io/uninitialized
+        value: "true"
+        effect: NoSchedule
+      # this is to have the daemonset runnable on master nodes
+      # the taint may vary depending on your cluster setup
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      # this is to restrict CCM to only run on master nodes
+      # the node selector may vary depending on your cluster setup
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
