@@ -19,7 +19,6 @@ package edge
 import (
 	"bufio"
 	"io"
-	"os"
 
 	"k8s.io/klog"
 	//gcfg "gopkg.in/gcfg.v1"
@@ -27,8 +26,6 @@ import (
 
 // Config is used to read and store information from the cloud configuration file
 type Config struct {
-	Username string
-	Password string
 }
 
 // ReadConfig reads values from environment variables and the cloud.conf, prioritizing cloud-config
@@ -55,13 +52,8 @@ func ReadConfig(config io.Reader) (Config, error) {
 func configFromEnv() Config {
 	var cfg Config
 
-	cfg.Username = os.Getenv("MIDOKURA_USERNAME")
-	cfg.Password = os.Getenv("MIDOKURA_PASSWORD")
-
 	return cfg
 }
 
 func logCfg(cfg Config) {
-	klog.V(5).Infof("Username: %s", cfg.Username)
-	klog.V(5).Infof("Password: %s", cfg.Password)
 }
