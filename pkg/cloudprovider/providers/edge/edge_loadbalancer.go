@@ -74,10 +74,15 @@ type loadBalancer struct {
 	status       *k8s.LoadBalancerStatus // basically to store ingress IP address
 }
 
+type clientInterface interface {
+	AddPortMapping(host string, externalPort uint16, proto string, internalPort uint16, internalIP string, enabled bool, desc string, lease uint32) error
+	DeletePortMapping(host string, externalPort uint16, proto string) error
+}
+
 // LoadBalancer store the data for Load Balancer API Edge cloud provider
 type LoadBalancer struct {
 	// UPnP IGD WANIP connection client
-	client *internetgateway2.WANIPConnection2
+	client clientInterface
 	// Local address of the client on the interface towards the UPnP device.
 	// Initialized on first call to client()
 	localAddress net.IP
@@ -109,9 +114,10 @@ func NewLoadBalancer() (*LoadBalancer, error) {
 			klog.Warningf("NewLoadBalancer: client #%d of %d: %v", i, len(clients), client)
 		}
 	}
-	lb.client = clients[0]
+	client := clients[0]
+	lb.client = client
 	// get local address
-	lb.localAddress = getLocalAddressToHost(lb.client.ServiceClient.Location.Hostname())
+	lb.localAddress = getLocalAddressToHost(client.ServiceClient.Location.Hostname())
 	// get external address
 	externalIP, err := getExternalIP()
 	if err != nil {
