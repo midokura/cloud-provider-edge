@@ -92,8 +92,9 @@ push: push-amd64-linux push-arm64-linux
 	docker manifest push midokura/edge-cloud-controller-manager:latest
 
 dependencies: clean-dependencies 
-	go mod init github.com/midokura/kubernetes/cloud-provider-edge
-	./switch_kubernetes_version.sh $(KUBERNETES_VERSION)
+	rm go.mod
+	go mod init github.com/midokura/cloud-provider-edge
+	./tools/switch_kubernetes_version.sh $(KUBERNETES_VERSION)
 
 run: edge-cloud-controller-manager-$(GOARCH)-$(GOOS)
 	sudo --preserve-env ./edge-cloud-controller-manager-$(GOARCH)-$(GOOS) --cloud-provider=edge --cloud-config=examples/edge.conf --leader-elect=false --use-service-account-credentials --client-ca-file=/var/lib/rancher/k3s/server/tls/client-ca.crt --kubeconfig=/etc/rancher/k3s/k3s.yaml --requestheader-client-ca-file=/var/lib/rancher/k3s/server/tls/request-header-ca.crt --allow-untagged-cloud --v=1 --vmodule=edge_config=5 --feature-gates='LegacyNodeRoleBehavior=false'
