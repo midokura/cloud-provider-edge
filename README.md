@@ -2,6 +2,7 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/midokura/cloud-provider-edge)](https://goreportcard.com/report/github.com/midokura/cloud-provider-edge)
 [![GoDoc](https://godoc.org/github.com/midokura/cloud-provider-edge?status.svg)](https://godoc.org/github.com/midokura/cloud-provider-edge)
+[![Coverage Status](https://coveralls.io/repos/github/midokura/cloud-provider-edge/badge.svg)](https://coveralls.io/github/midokura/cloud-provider-edge)
 
 This project aims to provide an Kubernetes 'cloud provider' for edge computing.
 
