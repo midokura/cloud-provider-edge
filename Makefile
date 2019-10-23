@@ -103,7 +103,7 @@ run: edge-cloud-controller-manager-$(GOARCH)-$(GOOS)
 #       See https://github.com/kubernetes/kubernetes/blob/37c3a4da97a866a863eb71543a79a56e9834da14/pkg/controller/service/service_controller.go#L642
 
 deploy-k3s: build-$(GOARCH)-$(GOOS)
-	# k3s has limitatoins regarding pulling images from private repositories (see https://github.com/rancher/k3s/issues/502)
+	# k3s has limitations regarding pulling images from private repositories (see https://github.com/rancher/k3s/issues/502)
 	# On the other hand, it allows to preload the images copying their TGZ file into /var/lib/rancher/k3s/agent/images/ (and restarting the service)
 	# See https://stackoverflow.com/a/55457377 and https://github.com/rancher/k3s/issues/167
 	sudo docker save midokura/edge-cloud-controller-manager:latest -o /var/lib/rancher/k3s/agent/images/edge-cloud-controller-manager-latest.tgz
