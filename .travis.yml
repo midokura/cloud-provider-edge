@@ -1,0 +1,20 @@
+language: go
+
+go:
+- 1.12.x
+- 1.13.x
+
+env:
+- GO111MODULE=on CI_TARGET=check
+- GO111MODULE=on CI_TARGET=cover
+
+go_import_path: github.com/midokura/cloud-provider-edge
+
+install:
+- true
+
+script:
+- ./tools/travis.sh
+
+after_success:
+- ./tools/travis_after_success.sh

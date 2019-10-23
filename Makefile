@@ -42,6 +42,11 @@ check: verify-fmt verify-lint vet
 test:
 	go test -count=1 -race -v $(shell go list ./...)
 
+.PHONY: cover
+cover:
+	go get github.com/mattn/goveralls
+	go test -count=1 -race -v -covermode=atomic -coverprofile=profile.cov ./...
+
 .PHONY: verify-fmt
 verify-fmt:
 	./hack/verify-gofmt.sh
