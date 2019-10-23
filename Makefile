@@ -21,19 +21,20 @@ VERSION ?= $(shell git describe --exact-match 2> /dev/null || \
                  git describe --match=$(git rev-parse --short=8 HEAD) --always --dirty --abbrev=8)
 LDFLAGS   := "-w -s -X 'main.version=${VERSION}'"
 
+COMMANDS := edge-cloud-controller-manager
+PLATFORMS := amd64-linux arm64-linux amd64-darwin
+ALL_BINS :=
+
 export GO111MODULE=on
 
-edge-cloud-controller-manager-amd64-linux: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build \
-		-ldflags $(LDFLAGS) \
-		-o edge-cloud-controller-manager-amd64-linux \
-		cmd/edge-cloud-controller-manager/main.go
+all:
 
-edge-cloud-controller-manager-arm64-linux: $(SOURCES)
-	CGO_ENABLED=0 GOARCH=arm64 GOOS=linux go build \
-		-ldflags $(LDFLAGS) \
-		-o edge-cloud-controller-manager-arm64-linux \
-		cmd/edge-cloud-controller-manager/main.go
+define PLATFORM_template
+$(1)-$(2): $(SOURCES)
+	GOARCH=$(word 1,$(subst -, ,$(2))) GOOS=$(word 2,$(subst -, ,$(2))) CGO_ENABLED=0 go build -ldflags $(LDFLAGS) -o $(1)-$(2) cmd/$(3)/main.go
+ALL_BINS := $(ALL_BINS) $(1)-$(2)
+endef
+$(foreach cmd, $(COMMANDS), $(foreach platform, $(PLATFORMS), $(eval $(call PLATFORM_template, $(cmd),$(platform),$(notdir $(cmd))))))
 
 .PHONY: check
 check: verify-fmt verify-lint vet
@@ -60,7 +61,7 @@ update-fmt:
 	./hack/update-gofmt.sh
 
 clean:
-	rm -f edge-cloud-controller-manager*
+	rm -f $(ALL_BINS)
 
 clean-dependencies:
 	git checkout -- go.mod go.sum
@@ -113,3 +114,5 @@ deploy-k3s: build-$(GOARCH)-$(GOOS)
 	sudo k3s kubectl delete -f install/edge-cloud-controller-manager-k3s-deployment.yaml --wait=true || echo keep going
 	sleep 5
 	sudo k3s kubectl apply -f install/edge-cloud-controller-manager-k3s-deployment.yaml
+
+all:	$(ALL_BINS)
