@@ -12,7 +12,7 @@ Here are some examples of how it's used.
 
 When you create a service with ```type: LoadBalancer``` and annotate it
 with ```midokura.com/load-balancer-type: upnp-igd```, the edge cloud
-controller manager will use the UPnP IGD mechanish to setup the required
+controller manager will use the UPnP IGD mechanism to setup the required
 port mappings in the Internet gateway device.
 
 If this annotation is not specified, the edge controller will ignore the service
