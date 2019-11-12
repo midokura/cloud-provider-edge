@@ -18,6 +18,13 @@ port mappings in the Internet gateway device.
 If this annotation is not specified, the edge controller will ignore the service
 and no port mappings will be done.
 
+NOTE: The Edge Cloud Controller Manager (namely its embedded UPnP client)
+should run on one of nodes on which the Node Port of the service is exposed.
+See the documentation of ``LegacyNodeRoleBehavior`` and
+``ServiceNodeExclusion``
+[feature gates](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/) and tweak your deployment of
+the Edge Cloud Controller Manager accordingly.
+
 For example:
 
 ```yaml
