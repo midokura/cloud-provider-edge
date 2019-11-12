@@ -209,7 +209,8 @@ func (lb *LoadBalancer) ensureOrUpdateLoadBalancer(ctx context.Context, clusterN
 	}
 	nodeIP := ""
 	if !isDelete {
-		nodeIP, err = getFirstNodeInternalIP(nodes)
+		clientIP := lb.localAddress.String()
+		nodeIP, err = getFirstNodeInternalIP(clientIP, nodes)
 		if err != nil {
 			return nil, err
 		}
@@ -374,18 +375,16 @@ func (lb *LoadBalancer) deletePortMapping(pm *portMapping) error {
 	return lb.client.DeletePortMapping("", externalPort, proto)
 }
 
-func getFirstNodeInternalIP(nodes []*k8s.Node) (string, error) {
+func getFirstNodeInternalIP(clientIP string, nodes []*k8s.Node) (string, error) {
 	errCtx := "" // TODO: add ctx
-	if len(nodes) != 1 {
-		return "", fmt.Errorf("%s: unsupported number of nodes: must be exactly 1 (%d given)", errCtx, len(nodes))
-	}
-
-	for _, address := range nodes[0].Status.Addresses {
-		if address.Type == k8s.NodeInternalIP {
-			return address.Address, nil
+	for _, node := range nodes {
+		for _, address := range node.Status.Addresses {
+			if address.Type == k8s.NodeInternalIP && address.Address == clientIP {
+				return address.Address, nil
+			}
 		}
 	}
-	return "", fmt.Errorf("%s: error getting node '%s' internal IP", errCtx, nodes[0].Name)
+	return "", fmt.Errorf("%s: no nodes with internal IP '%s'", errCtx, clientIP)
 }
 
 func getLocalAddressToHost(host string) net.IP {

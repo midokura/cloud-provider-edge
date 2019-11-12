@@ -137,3 +137,142 @@ func TestPatchLoadBalancer(t *testing.T) {
 		t.Errorf("got %v\nwant %v", actualAdded, expectedAdded)
 	}
 }
+
+func TestGetFirstNodeInternalIP(t *testing.T) {
+	nodes := []*v1.Node{
+		{
+			Status: v1.NodeStatus{
+				Addresses: []v1.NodeAddress{
+					{
+						Type:    v1.NodeInternalIP,
+						Address: "192.0.2.6",
+					},
+					{
+						Type:    v1.NodeExternalIP,
+						Address: "192.0.2.5",
+					},
+					{
+						Type:    v1.NodeInternalIP,
+						Address: "192.0.2.4",
+					},
+				},
+			},
+		},
+		{
+			Status: v1.NodeStatus{
+				Addresses: []v1.NodeAddress{
+					{
+						Type:    v1.NodeInternalIP,
+						Address: "192.0.2.3",
+					},
+					{
+						Type:    v1.NodeExternalIP,
+						Address: "192.0.2.2",
+					},
+					{
+						Type:    v1.NodeInternalIP,
+						Address: "192.0.2.1",
+					},
+				},
+			},
+		},
+	}
+	expected := "192.0.2.1"
+	actual, err := getFirstNodeInternalIP("192.0.2.1", nodes)
+	if err != nil {
+		t.Errorf("unexpected error %v", err)
+	}
+	if actual != expected {
+		t.Errorf("got %v\nwant %v", actual, expected)
+	}
+}
+
+func TestGetFirstNodeInternalIPFailure1(t *testing.T) {
+	nodes := []*v1.Node{
+		{
+			Status: v1.NodeStatus{
+				Addresses: []v1.NodeAddress{
+					{
+						Type:    v1.NodeInternalIP,
+						Address: "192.0.2.6",
+					},
+					{
+						Type:    v1.NodeExternalIP,
+						Address: "192.0.2.5",
+					},
+					{
+						Type:    v1.NodeInternalIP,
+						Address: "192.0.2.4",
+					},
+				},
+			},
+		},
+		{
+			Status: v1.NodeStatus{
+				Addresses: []v1.NodeAddress{
+					{
+						Type:    v1.NodeInternalIP,
+						Address: "192.0.2.3",
+					},
+					{
+						Type:    v1.NodeExternalIP,
+						Address: "192.0.2.2",
+					},
+					{
+						Type:    v1.NodeInternalIP,
+						Address: "192.0.2.1",
+					},
+				},
+			},
+		},
+	}
+	actual, err := getFirstNodeInternalIP("192.0.2.2", nodes)
+	if err == nil {
+		t.Errorf("unexpected success %v", actual)
+	}
+}
+
+func TestGetFirstNodeInternalIPFailure2(t *testing.T) {
+	nodes := []*v1.Node{
+		{
+			Status: v1.NodeStatus{
+				Addresses: []v1.NodeAddress{
+					{
+						Type:    v1.NodeInternalIP,
+						Address: "192.0.2.6",
+					},
+					{
+						Type:    v1.NodeExternalIP,
+						Address: "192.0.2.5",
+					},
+					{
+						Type:    v1.NodeInternalIP,
+						Address: "192.0.2.4",
+					},
+				},
+			},
+		},
+		{
+			Status: v1.NodeStatus{
+				Addresses: []v1.NodeAddress{
+					{
+						Type:    v1.NodeInternalIP,
+						Address: "192.0.2.3",
+					},
+					{
+						Type:    v1.NodeExternalIP,
+						Address: "192.0.2.2",
+					},
+					{
+						Type:    v1.NodeInternalIP,
+						Address: "192.0.2.1",
+					},
+				},
+			},
+		},
+	}
+	actual, err := getFirstNodeInternalIP("192.0.2.7", nodes)
+	if err == nil {
+		t.Errorf("unexpected success %v", actual)
+	}
+}
